@@ -194,8 +194,9 @@ function move_attachments_to_disk( $p_type, array $p_projects ) {
 			$t_data = array();
 
 			while( $t_row = db_fetch_array( $t_result ) ) {
-				$t_disk_filename = $t_upload_path . $t_row['diskfile'];
-				if ( file_exists( $t_disk_filename ) ) {
+				# first check if filename is on new format already
+				$t_filepath = adjust_filepath($t_upload_path, $t_row['diskfile']); 
+				$t_disk_filename = $t_filepath . $t_row['diskfile'];				if ( file_exists( $t_disk_filename ) ) {
 					$t_status = 'Disk File Already Exists \'' . $t_disk_filename . '\'';
 					$t_failures++;
 				} else {
@@ -217,7 +218,7 @@ function move_attachments_to_disk( $p_type, array $p_projects ) {
 						}
 						$t_update_result = db_query(
 							$t_update_query,
-							array( $t_upload_path, $t_row['id'] )
+							array( $t_filepath, $t_row['id'] )
 						);
 
 						if( !$t_update_result ) {
@@ -242,6 +243,8 @@ function move_attachments_to_disk( $p_type, array $p_projects ) {
 					$t_file['bug_id'] = $t_row['bug_id'];
 				}
 				$t_data[] = $t_file;
+				$t_row = null;
+				gc_collect_cycles();
 			}
 		}
 
@@ -252,6 +255,8 @@ function move_attachments_to_disk( $p_type, array $p_projects ) {
 			'failed'     => $t_failures,
 			'data'       => $t_data,
 		);
+		$t_result = null;
+		gc_collect_cycles();
 
 	}
 	return $t_moved;

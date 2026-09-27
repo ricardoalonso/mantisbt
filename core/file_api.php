@@ -718,6 +718,7 @@ function file_delete( $p_file_id, $p_table = 'bug', $p_bugnote_id = 0 ) {
 
 	$c_file_id = (int)$p_file_id;
 	$t_filename = file_get_field( $p_file_id, 'filename', $p_table );
+	$t_folder = file_get_field( $p_file_id, 'folder', $p_table );
 	$t_diskfile = file_get_field( $p_file_id, 'diskfile', $p_table );
 
 	if( $p_table == 'bug' ) {
@@ -728,7 +729,7 @@ function file_delete( $p_file_id, $p_table = 'bug', $p_bugnote_id = 0 ) {
 	}
 
 	if( DISK == $t_upload_method ) {
-		$t_local_disk_file = file_normalize_attachment_path( $t_diskfile, $t_project_id );
+		$t_local_disk_file = file_normalize_attachment_path( $t_folder . $t_diskfile, $t_project_id );
 		if( file_exists( $t_local_disk_file ) ) {
 			file_delete_local( $t_local_disk_file );
 		}
@@ -1005,6 +1006,10 @@ function file_add( $p_bug_id, array $p_file, $p_table = 'bug', $p_title = '', $p
 
 	$t_unique_name = file_generate_unique_name( $t_file_path );
 	$t_method = config_get( 'file_upload_method' );
+
+	# adjust the path to accomodate the files into smaller folders
+	$t_file_path = adjust_filepath( $t_file_path, $t_unique_name);
+
 
 	switch( $t_method ) {
 		case DISK:
@@ -1513,4 +1518,23 @@ function file_get_max_file_size() {
 		ini_get_number( 'post_max_size' ),
 		config_get( 'max_file_size' )
 	);
+}
+
+/**
+ * Adjust the file path to subdivide the uploaded files into folders. 
+ * 
+ * @param string $p_filepath the path to store the files
+ * @param string $p_filename the name of the file to store
+ * @return string the adjusted file path if necessary. 
+ * 
+ */
+function adjust_filepath($p_filepath, $p_filename){
+	$t_search = DIRECTORY_SEPARATOR . substr( $p_filename, 0, 2 ); 
+	if (strpos( $p_filepath, $t_search) === false ){
+		$t_filepath = $p_filepath . substr( $p_filename, 0, 2 ) . DIRECTORY_SEPARATOR;
+		if ( !file_exists( $t_filepath ) )
+			mkdir( $t_filepath, 0700 );
+		return $t_filepath;
+	}
+	return $p_filepath;
 }
