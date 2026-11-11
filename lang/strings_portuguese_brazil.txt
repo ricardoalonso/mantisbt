@@ -744,6 +744,7 @@ $s_add_project_button = 'Adicionar projeto';
 $s_projects_title = 'Projetos';
 $s_projects_title_label = 'Projetos';
 $s_name = 'Nome';
+$s_search_project_hint = 'Nome ou descrição';
 $s_project_updated_msg = 'O projeto foi atualizado com sucesso...';
 $s_version_added_msg = 'A versão foi adicionada com sucesso...';
 $s_version_deleted_msg = 'A versão foi apagada com sucesso...';
